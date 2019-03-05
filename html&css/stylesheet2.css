@@ -1,0 +1,28 @@
+.red{
+    background: red;
+    align-self:flex-end;
+}
+
+.green{
+    background: green;
+}
+
+.blue{
+    background: blue;
+}
+
+.box{
+    width: 100px;
+    height: 100px;
+}
+
+.wrapper{
+    background: #fff;
+    width: 960px;
+    height: 260px;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+}

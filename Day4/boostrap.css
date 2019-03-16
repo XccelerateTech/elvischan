@@ -1,0 +1,152 @@
+.section01{
+    background-image: url('./assets/header.jpg');
+    background-repeat: no-repeat;
+    height:900px ;
+    display: flex;
+    justify-content: center;
+    /* align-content: center; */
+    /* flex-wrap: wrap; */
+    position: relative;
+    /* flex-direction: column; */
+}
+
+.section01Item {
+    width: 60%;
+    text-align: center;    
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    /* position: relative; */
+
+} 
+
+.section01Item h1{
+    text-align: center;
+    color: white;
+    font-size: 70px;
+}
+
+.section01Item p{
+    text-align: center;
+    color: white;
+    font-size: 20px;
+    padding-left: 100px;
+    padding-right: 100px;
+    opacity: 0.5;
+}
+
+.section01Item hr{
+    max-width: 50px;
+    border-color: #f05f40;
+    border-width: 3px;
+}
+
+.section01Item button{
+    font-size: 20px;
+    background-color: #f05f40;
+    color: #ffffff;
+    border-radius: 20px;
+    border: none;
+    position: relative;
+}
+
+.section02{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    flex-direction: column;
+    background-color: #f05f40;
+    height:442px;
+}
+
+.section02Item h3{
+    color: #ffffff;
+    /* position: relative;
+    left:150px; */
+
+}
+
+.section02Item p{
+    color: #ffffff;
+    text-align: center;  
+    opacity: 0.5; 
+}
+
+.section02Item button{
+    font-size: 20px;
+    border-radius: 20px;
+    border: none;
+    position: relative;
+}
+
+.section02Item {
+    width:50%;
+    text-align: center;    
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+
+} 
+
+.section02hr{
+    border-color:#ffffff;
+}
+
+.section03{
+    /* display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    flex-direction: column;
+    background-color: #ffffff; */
+    height:528px;
+}
+
+.section03Item{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    flex-direction: column;
+}
+
+.section03Item h3{
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom:50px;
+}
+
+.boxes{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.box01{
+    width: 20%;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.box01 p{
+    text-align: center;
+    opacity: 0.5;
+}
+
+.text-primary{
+    color: #f05f40;
+}
+
+/* extra */

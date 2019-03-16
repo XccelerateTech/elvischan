@@ -1,0 +1,84 @@
+<!-- EEEEEEEEEE FFFFFFFFFFFF GGGGGGGGGGGGG -->
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Sample Page</title>
+    </head>
+    <body>
+        <h1>My Homepage</h1>
+        <div class="content-section">
+            <p>
+                I'm a paragraph
+            </p>
+        </div>
+        <div class="content-section" style="background-color: aqua">
+            <h3 id="hh">Section Heading</h3>
+            <p>
+                Another paragraph
+            </p>
+            <div id="info-field">
+                <p>
+                    some info
+                </p>
+            </div>
+        </div>
+        <div id="parent">
+            <div class="child">
+                <h3>fff</h3>
+            </div>
+            <div class="child">
+                <p>kkk</p>
+            </div>
+            <p id="gg">123</p>
+        </div>
+        <h3 id="idddd">1234445655</h3>
+        <script>
+            document.getElementById('hh').innerHTML="qweqwe";
+            document.getElementById('info-field').getElementsByTagName('p')[0].innerHTML="hahkakakaaha";
+            document.getElementsByClassName("content-section")[0].style.backgroundColor="red";//returns <div class="content-section">...</div>,                                                                         <div class="content-section">...</div>
+            document.getElementsByTagName("h3")[0].style.color = "red"; //returns <h3>Section Heading</h3>
+            function getClass(a){
+                console.log(document.getElementsByClassName(a));
+                return document.getElementsByClassName(a);
+            }
+            getClass("content-section");
+            // console.log(document.getElementById('parent')	)
+            // console.log(document.getElementById('parent').children	)
+            // console.log(document.getElementById('parent').children[0])
+
+            // document.getElementById('parent').removeChild(document.getElementById('parent').childNodes[3]);
+
+            function removeThing(a){
+
+                var element = document.getElementById(a);
+                var bbb = element.childNodes.length;
+                for(var i=0; i< bbb; i++){
+                    console.log('lenbgth' + element.childNodes.length)
+                    console.log('i' + i);
+                    element.removeChild(element.childNodes[0]);
+                }
+            }
+
+            removeThing("parent");
+
+            function removethings(a){
+                document.getElementById(a).innerHTML="";
+            }
+            // removethings("parent");
+
+
+            console.log(document.getElementById('parent'));
+
+            var elem = document.getElementById('idddd');
+            // elem.onclick = function() {
+            //     alert('I was clicked'); // every time the user clicks on title an alert will pop up
+            // };
+
+            // another option is eventListeners
+            elem.addEventListener('mouseover', function() {
+                alert('I was hovered');
+            });
+                    </script>
+    </body>
+</html>

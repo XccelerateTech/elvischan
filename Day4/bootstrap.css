@@ -1,0 +1,233 @@
+.section01{
+    background-image: url('./assets/header.jpg');
+    background-repeat: no-repeat;
+    height:900px ;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+}
+
+.section01Item{
+    max-width:1000px;
+}
+
+.section01Item h1{
+    color: white;
+    font-size: 70px;   
+}
+
+.section01Item hr{
+    max-width: 50px;
+    border-color: #f05f40;
+    border-width: 3px
+}
+
+.section01Item p{
+    text-align: center;
+    color: white;
+    font-size: 20px;
+    /* padding-left: 100px;
+    padding-right: 100px; */
+    opacity: 0.5;
+}
+
+.section01Item button{
+    font-size: 20px;
+    background-color: #f05f40;
+    color: #ffffff;
+    border-radius: 20px;
+    border: none;
+    position: relative;
+}
+
+/* section02 */
+
+.section02{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    flex-direction: column;
+    background-color: #f05f40;
+    height:442px;
+}
+
+.section02Item{
+    max-width:750px;
+}
+
+.section02Item hr{
+    max-width: 50px;
+    border-color: #ffffff;
+    border-width: 3px
+}
+
+.section02Item h3{
+    color: #ffffff;
+}
+
+.section02Item p{
+    color: #ffffff;
+    text-align: center;  
+    opacity: 0.5; 
+}
+
+.section02Item button{
+    font-size: 20px;
+    border-radius: 20px;
+    border: none;
+    position: relative;
+}
+
+/* section03 */
+
+.section03{
+    min-height:528px;
+}
+
+.section03Item{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    flex-direction: column;
+}
+
+.section03Item h3{
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom:50px;
+}
+
+.boxes{
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    max-width: 1000px;
+}
+
+
+.box01 p{
+    text-align: center;
+    opacity: 0.5;
+}
+
+.text-primary{
+    color: #f05f40;
+}
+
+/* section04 */
+
+ .images img{
+     position: relative;
+ }
+
+ .hint {
+    opacity: 0;
+    transition: opacity 0.5s;   
+    background: rgba(240,95,64,.9);
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+ .hint:hover {
+    opacity: 1;
+}
+
+ .hint span.word {
+    display: block;
+    font-size: 1.5rem;
+    color: #fff;
+    text-transform: capitalize;
+}
+
+/* section05 */
+.section05{
+    background-color: black;
+    min-height:203px;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.section05 h3{
+    color:#ffffff;
+}
+
+.section05 button{
+    margin-top: 20px;
+    font-size: 20px;
+    border-radius: 20px;
+    border: none;
+    position: relative;
+}
+
+.section06{
+    min-height:550px;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-wrap: wrap;
+    position: relative;
+}
+
+.section06Item{
+}
+
+.section06Item hr{
+    max-width: 50px;
+    border-color: #f05f40;
+    border-width: 3px    
+}
+
+/* a{
+    color:#f05f40 !important;
+} */
+
+/* extra */
+.btn {
+    background-color: #f05f40;
+    color: #ffffff !important;
+    border-radius: 30px;
+    font-weight: bold;
+    padding: 0.75rem 1.75rem;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 0.85rem;
+}
+
+.nav-link.active {
+    color: #f05f40 !important;
+    font-weight: bold;
+}
+
+.navbar-brandActive {
+    color: #f05f40 !important;
+    font-size: 1.3rem;
+
+}
+
+.solid{
+    background-color: #ffffff;
+    border-bottom: 2px #000000 solid;
+}

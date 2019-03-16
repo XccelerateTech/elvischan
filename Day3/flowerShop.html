@@ -8,7 +8,7 @@
     </title>
 </head>
 
-<body>
+<body >
     <header>
         <img src="./assets/logo.png">
     </header>
@@ -27,7 +27,7 @@
             <div class="row">
                 <div class="col-sm-6 ">
                     <div class="option">
-                        <img src='./assets/flower-icon.png'>
+                        <img id="001" src='./assets/flower-icon.png'>
                         <p>Flowers for every kind of situation</p>
                     </div>
                 </div>
@@ -54,4 +54,25 @@
             </div>
         </div>
     </section>
+    <script>
+        //Day 9 CCCCCCCCCCCCCCC
+        var elem = document.getElementById('001');
+            elem.addEventListener('mouseover', function() {
+            elem.style.width="100%";
+            alert('I was hovered');
+            });
+            elem.addEventListener('mouseleave', function() {
+            elem.style.width="30%";
+            alert('I was hovered');
+            });
+        var elem2 = document.getElementsByClassName('overlay');
+            elem2[0].addEventListener('mouseover', function() {
+            elem2[0].style.opacity="0";
+            alert('I was overlayed');
+            document.getElementsByClassName('heading')[0].getElementsByTagName('button')[0].style.background="red";
+            document.getElementsByClassName('heading')[0].getElementsByTagName('p')[0].innerHTML="Welcome to my shop.";
+            document.getElementsByClassName('heading')[0].getElementsByTagName('p')[0].style.background="black";
+            });
+
+    </script>
 </body>

@@ -75,7 +75,7 @@ $("#clearButton").click(function() {
 
 
 //4444444444444444444
-$( "#clickable-div" ).after('<form id="form2">'+
+$( "#clickable-div" ).after('<form id="form2" class="contact-form">'+
     '<div id="row-name">'+
         '<input type="text" name="name" placeholder="Name"/>'+
     '</div>'+
@@ -112,8 +112,10 @@ $('#contact-list').on('click','.row',function(e) { //target a specific row by cl
 });
 
 //66666666666666666666666666666
+let rowIdCounter = $('#contact-list tbody').find('tr').length;
 $('.contact-form').submit(function(e) { //when the contact-form is submitted do this.
     e.preventDefault(); //stops from reloading the page
+    console.log(e.target);
     var formId = e.target.id;
     var name = e.target.name.value;
     var phone = e.target.phone.value; //get all information from form that the user filled out, store into newly defined variables

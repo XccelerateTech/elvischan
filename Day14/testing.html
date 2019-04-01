@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css"> -->
+    <!-- <script src="main.js"></script> -->
+</head>
+
+<body>
+    <script type='text/javascript' src="https://code.jquery.com/jquery-3.2.1.js"></script>
+    <canvas id="canvas-real" class="canvas" width='1280px' height='720px' style="    border:1px black dotted;
+ "></canvas>
+    <button type="button" onclick="undo()">undo</button>
+
+    <canvas id="canvas-draft" class="canvas" width='1280px' height='720px' style="    border:1px black dotted;
+"></canvas>
+    <button type="button" onclick="undo()">undo</button>
+
+    <script type='text/javascript'>
+        let canvasReal = document.getElementById('canvas-real');
+        let contextReal = canvasReal.getContext('2d');
+        let canvasDraft = document.getElementById('canvas-draft');
+        let contextDraft = canvasDraft.getContext('2d');
+        let currentFunction;
+        let dragging = false;
+        let recall = [];
+
+        $('#canvas-draft').mousedown(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseDown([mouseX, mouseY], e);
+            dragging = true;
+        });
+
+        $('#canvas-draft').mousemove(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            if (dragging) {
+                currentFunction.onDragging([mouseX, mouseY], e);
+            }
+            currentFunction.onMouseMove([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseup(function (e) {
+            dragging = false;
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseUp([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseleave(function (e) {
+            dragging = false;
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseLeave([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseenter(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseEnter([mouseX, mouseY], e);
+        });
+
+
+        class PaintFunction {
+            constructor() { }
+            onMouseDown() { }
+            onDragging() { }
+            onMouseMove() { }
+            onMouseUp() { }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+
+        class DrawingRectangle extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+            }
+            onDragging(coord, event) {
+                this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY)
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextReal.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY);
+                recall.push([ this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY]);
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+            undo(a,b,c,d){
+                this.contextReal.fillRect(a, b, c, d);
+            }
+
+        }
+
+        function undo() {
+            contextReal.clearRect(0, 0, canvasReal.width, canvasReal.height);
+            recall.pop();
+            let a = new DrawingRectangle(contextReal, contextDraft);
+
+            for (i=0; i < recall.length; i++){
+                // contextReal.fillRect(recall[i][0], recall[i][1], recall[i][2], recall[i][3]);
+                a.undo(recall[i][0], recall[i][1], recall[i][2], recall[i][3]);
+            }
+        }
+
+        currentFunction = new DrawingRectangle(contextReal, contextDraft);
+
+        class DrawingLine extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+                this.contextDraft.moveTo(this.origX, this.origY);
+
+            }
+            onDragging(coord, event) {
+                this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.beginPath();
+                this.contextDraft.moveTo(this.origX, this.origY);
+                this.contextDraft.lineTo(coord[0], coord[1]);
+                this.contextDraft.stroke();
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextReal.beginPath();
+                this.contextReal.moveTo(this.origX, this.origY);
+                this.contextReal.lineTo(coord[0], coord[1]);
+                this.contextReal.stroke();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+
+        // currentFunction = new DrawingLine(contextReal, contextDraft)
+
+        class Drawing extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                console.log("elvis");
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+                this.contextDraft.moveTo(this.origX, this.origY);
+
+            }
+            onDragging(coord, event) {
+
+                // this.contextDraft.fillStyle = "#f44";
+                // this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                // this.contextDraft.beginPath();
+                // this.contextDraft.moveTo(this.origX, this.origY);
+                // this.contextDraft.lineTo(coord[0], coord[1]);
+                // this.contextDraft.stroke();
+                this.contextDraft.lineTo(coord[0], coord[1]);
+                this.contextDraft.moveTo(coord[0], coord[1]);
+                // this.contextDraft.closePath();
+                this.contextDraft.stroke();
+            }
+
+            onMouseMove() { }
+            onMouseUp() {
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+
+        // currentFunction = new Drawing(contextReal, contextDraft)
+
+
+
+    </script>
+
+</body>
+
+</html>

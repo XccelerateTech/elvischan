@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css">
+    <script src="main.js"></script>
+</head>
+
+<body>
+    <canvas id="canvas" width="1000" height="1000"> Your browser does not support Canvas </canvas>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <script type='text/javascript'>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        // green box
+        // ctx.fillStyle = 'green';
+        // ctx.fillRect(10, 10, 100, 100)
+
+        //house
+        // ctx.lineWidth = 5;
+        // ctx.strokeRect(75, 140, 150, 110);
+        // ctx.fillRect(130, 190, 40, 60);
+        // ctx.beginPath();
+        // ctx.moveTo(50, 140);
+        // ctx.lineTo(250, 140);
+        // ctx.lineTo(150, 60);
+        // ctx.closePath();
+        // ctx.stroke();
+
+        // drawline function
+        // function drawLine(ctx, start, end) {
+        //     ctx.beginPath();
+        //     ctx.moveTo(start[0], start[1]);
+        //     ctx.lineTo(end[0], end[1]);
+        //     ctx.stroke();
+        // }
+        // drawLine(ctx, [300, 100], [350, 150])
+
+        // A
+        function drawLine(ctx, start, end, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(start[0],start[1],end[0],end[1]);
+            ctx.beginPath();
+            ctx.moveTo(start[0], start[1]);
+            ctx.lineTo(end[0], end[1]);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(start[0], end[1]);
+            ctx.lineTo(end[0], start[1]);
+            ctx.stroke();
+        }
+        drawLine(ctx, [300, 100], [350, 150], "green")
+
+        //curve01
+        // ctx.beginPath();
+        // ctx.moveTo(0, 0)
+        // ctx.quadraticCurveTo(500, 200, 500, 500);
+        // ctx.stroke();
+
+        //curve02
+        // ctx.beginPath();
+        // ctx.moveTo(0,0)
+        // ctx.bezierCurveTo(500,20,200,300,500,500)
+        // ctx.stroke();
+
+        //B
+        // function drawDoorLine(ctx, a, b, c, d) {
+        //     ctx.beginPath();
+        //     ctx.moveTo(a[0], a[1]);
+        //     ctx.lineTo(b[0], b[1]);
+        //     ctx.lineTo(c[0], c[1]);
+        //     ctx.lineTo(d[0], d[1]);
+        //     ctx.stroke();
+        //     ctx.beginPath();
+        //     ctx.moveTo(a[0], a[1])
+        //     ctx.quadraticCurveTo(350, 0, d[0], d[1]);
+        //     ctx.stroke();
+
+        // }
+        // drawDoorLine(ctx, [300, 100], [300, 300], [400, 300], [400, 100])
+        
+        //mouse event
+        $('#canvas').mousedown(function (e) {
+            var mouseX = e.offsetX;
+            var mouseY = e.offsetY;
+            console.log("mouseX: " +mouseX + "mouseY: " + mouseY);
+        });
+
+
+
+
+
+    </script>
+    <style type='text/css'>
+        canvas {
+            border: 2px solid black;
+        }
+    </style>
+</body>
+
+</html>

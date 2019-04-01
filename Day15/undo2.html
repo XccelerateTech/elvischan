@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css"> -->
+    <!-- <script src="main.js"></script> -->
+</head>
+
+<body>
+    <script type='text/javascript' src="https://code.jquery.com/jquery-3.2.1.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <canvas id="canvas-real" class="canvas" width='1280px' height='720px' style=" border:1px black dotted; position:absolute; top:0px; bottom:0px; left:0px; right:0px; z-index: -1;
+ "></canvas>
+    <button type="button" onclick="cUndo()">undo</button>
+    <button type="button" onclick="cRedo()">undo</button>
+    <button type="button" onclick="rect()">rect</button>
+    <button type="button" onclick="line()">line</button>
+    <button type="button" onclick="draw()">draw</button>
+
+
+    <canvas id="canvas-draft" class="canvas" width='1280px' height='720px' style="    border:1px black dotted; position:absolute; top:0px; bottom:0px; left:0px; right:0px; z-index: -1;
+"></canvas>
+
+    <script type='text/javascript'>
+        let canvasReal = document.getElementById('canvas-real');
+        let contextReal = canvasReal.getContext('2d');
+        let canvasDraft = document.getElementById('canvas-draft');
+        let contextDraft = canvasDraft.getContext('2d');
+        let currentFunction;
+        let dragging = false;
+        // undo event
+        var recordArray = new Array();
+        var record = -1;
+
+        $('#canvas-draft').mousedown(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseDown([mouseX, mouseY], e);
+            dragging = true;
+        });
+
+        $('#canvas-draft').mousemove(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            if (dragging) {
+                currentFunction.onDragging([mouseX, mouseY], e);
+            }
+            currentFunction.onMouseMove([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseup(function (e) {
+            dragging = false;
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseUp([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseleave(function (e) {
+            dragging = false;
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseLeave([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseenter(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseEnter([mouseX, mouseY], e);
+        });
+
+
+        class PaintFunction {
+            constructor() { }
+            onMouseDown() { }
+            onDragging() { }
+            onMouseMove() { }
+            onMouseUp() { }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+
+        class DrawingRectangle extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+            }
+            onDragging(coord, event) {
+                this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY)
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextReal.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY);
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+
+
+        }
+        function rect() {
+            currentFunction = new DrawingRectangle(contextReal, contextDraft);
+        }
+
+        class DrawingLine extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+                this.contextDraft.moveTo(this.origX, this.origY);
+
+            }
+            onDragging(coord, event) {
+                this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.beginPath();
+                this.contextDraft.moveTo(this.origX, this.origY);
+                this.contextDraft.lineTo(coord[0], coord[1]);
+                this.contextDraft.stroke();
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextReal.beginPath();
+                this.contextReal.moveTo(this.origX, this.origY);
+                this.contextReal.lineTo(coord[0], coord[1]);
+                this.contextReal.stroke();
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+        function line() {
+            currentFunction = new DrawingLine(contextReal, contextDraft)
+        }
+
+        class Drawing extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+                this.contextReal.moveTo(this.origX, this.origY);
+
+            }
+            onDragging(coord, event) {
+                // ctx.beginPath();
+                // ctx.strokeStyle = $('#selColor').val();
+                // ctx.lineWidth = $('#selWidth').val();
+                // ctx.lineJoin = "round";
+                // ctx.moveTo(lastX, lastY);
+                // ctx.lineTo(x, y);
+                // ctx.closePath();
+                // ctx.stroke();
+
+                // this.contextDraft.fillStyle = "#f44";
+                // this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                // this.contextDraft.beginPath();
+                // this.contextDraft.moveTo(this.origX, this.origY);
+                // this.contextDraft.lineTo(coord[0], coord[1]);
+                // this.contextDraft.stroke();
+                // this.contextReal.moveTo(coord[0], coord[1]);
+
+                this.contextReal.lineTo(coord[0], coord[1]);
+                // this.contextReal.moveTo(coord[0], coord[1]);
+                // this.contextDraft.closePath();
+                this.contextReal.stroke();
+            }
+
+            onMouseMove() { }
+            onMouseUp() {
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+        function draw() {
+            currentFunction = new Drawing(contextReal, contextDraft)
+        }
+
+                // undo event
+
+        function drawImage() {
+            var image = new Image();
+            image.src = 'myimg.jpg';
+            $(image).load(function () {
+                contextReal.drawImage(image, 0, 0, 1280, 720);
+                cPush();
+            });
+        }
+
+        function cPush() {
+            record++;
+            if (record < recordArray.length) { recordArray.length = record; }
+            recordArray.push(document.getElementById('canvas-real').toDataURL());
+            document.title = record + ":" + recordArray.length;
+        }
+        function cUndo() {
+            if (record > 0) {
+                record--;
+                var canvasPic = new Image();
+                canvasPic.src = recordArray[record];
+                //onload 事件会在页面或图像加载完成后立即发生。
+                canvasPic.onload = function () { contextReal.drawImage(canvasPic, 0, 0); }
+                document.title = record + ":" + recordArray.length;
+            }
+        }
+        function cRedo() {
+
+            if (record < recordArray.length - 1) {
+                record++;
+                var canvasPic = new Image();
+                canvasPic.src = recordArray[record];
+                canvasPic.onload = function () { contextReal.drawImage(canvasPic, 0, 0); }
+                document.title = record + ":" + recordArray.length;
+            }
+        }
+
+        drawImage();
+
+
+    </script>
+
+</body>
+
+</html>

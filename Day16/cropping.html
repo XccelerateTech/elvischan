@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css"> -->
+    <!-- <script src="main.js"></script> -->
+</head>
+
+<body>
+    <script type='text/javascript' src="https://code.jquery.com/jquery-3.2.1.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <canvas id="canvas-real" class="canvas" width='1280px' height='720px' style=" border:1px black dotted; position:absolute; top:0px; bottom:0px; left:0px; right:0px; z-index: -1;
+ "></canvas>
+    <button type="button" onclick="copy()">copy</button>
+    <button type="button" onclick="cRedo()">undo</button>
+    <button type="button" onclick="rect()">rect</button>
+    <button type="button" onclick="line()">line</button>
+    <button type="button" onclick="draw()">draw</button>
+
+
+    <canvas id="canvas-draft" class="canvas" width='1280px' height='720px' style="    border:1px black dotted; position:absolute; top:0px; bottom:0px; left:0px; right:0px; z-index: -1;
+"></canvas>
+
+    <script type='text/javascript'>
+        let canvasReal = document.getElementById('canvas-real');
+        let contextReal = canvasReal.getContext('2d');
+        let canvasDraft = document.getElementById('canvas-draft');
+        let contextDraft = canvasDraft.getContext('2d');
+        let currentFunction;
+        let dragging = false;
+        // undo event
+        var recordArray = new Array();
+        var record = -1;
+
+        $('#canvas-draft').mousedown(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseDown([mouseX, mouseY], e);
+            dragging = true;
+        });
+
+        $('#canvas-draft').mousemove(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            if (dragging) {
+                currentFunction.onDragging([mouseX, mouseY], e);
+            }
+            currentFunction.onMouseMove([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseup(function (e) {
+            dragging = false;
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseUp([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseleave(function (e) {
+            dragging = false;
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseLeave([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseenter(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseEnter([mouseX, mouseY], e);
+        });
+
+
+        class PaintFunction {
+            constructor() { }
+            onMouseDown() { }
+            onDragging() { }
+            onMouseMove() { }
+            onMouseUp() { }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+
+        class DrawingRectangle extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+            }
+            onDragging(coord, event) {
+                this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY)
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextReal.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY);
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+
+
+        }
+        function rect() {
+            currentFunction = new DrawingRectangle(contextReal, contextDraft);
+        }
+
+        class DrawingLine extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+                this.contextDraft.moveTo(this.origX, this.origY);
+
+            }
+            onDragging(coord, event) {
+                this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.beginPath();
+                this.contextDraft.moveTo(this.origX, this.origY);
+                this.contextDraft.lineTo(coord[0], coord[1]);
+                this.contextDraft.stroke();
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextReal.beginPath();
+                this.contextReal.moveTo(this.origX, this.origY);
+                this.contextReal.lineTo(coord[0], coord[1]);
+                this.contextReal.stroke();
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+        function line() {
+            currentFunction = new DrawingLine(contextReal, contextDraft)
+        }
+
+        class Drawing extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+                this.contextReal.moveTo(this.origX, this.origY);
+
+            }
+            onDragging(coord, event) {
+                // ctx.beginPath();
+                // ctx.strokeStyle = $('#selColor').val();
+                // ctx.lineWidth = $('#selWidth').val();
+                // ctx.lineJoin = "round";
+                // ctx.moveTo(lastX, lastY);
+                // ctx.lineTo(x, y);
+                // ctx.closePath();
+                // ctx.stroke();
+
+                // this.contextDraft.fillStyle = "#f44";
+                // this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                // this.contextDraft.beginPath();
+                // this.contextDraft.moveTo(this.origX, this.origY);
+                // this.contextDraft.lineTo(coord[0], coord[1]);
+                // this.contextDraft.stroke();
+                // this.contextReal.moveTo(coord[0], coord[1]);
+
+                this.contextReal.lineTo(coord[0], coord[1]);
+                // this.contextReal.moveTo(coord[0], coord[1]);
+                // this.contextDraft.closePath();
+                this.contextReal.stroke();
+            }
+
+            onMouseMove() { }
+            onMouseUp() {
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+        function draw() {
+            currentFunction = new Drawing(contextReal, contextDraft)
+        }
+
+        // undo event
+
+        function drawImage() {
+            var image = new Image();
+            image.src = 'myimg.jpg';
+            $(image).load(function () {
+                contextReal.drawImage(image, 0, 0, 1280, 720);
+                cPush();
+            });
+        }
+
+        function cPush() {
+            record++;
+            if (record < recordArray.length) { recordArray.length = record; }
+            recordArray.push(document.getElementById('canvas-real').toDataURL());
+            document.title = record + ":" + recordArray.length;
+        }
+        function cUndo() {
+            if (record > 0) {
+                record--;
+                var canvasPic = new Image();
+                canvasPic.src = recordArray[record];
+                //onload 事件会在页面或图像加载完成后立即发生。
+                canvasPic.onload = function () { contextReal.drawImage(canvasPic, 0, 0); }
+                document.title = record + ":" + recordArray.length;
+            }
+        }
+        function cRedo() {
+
+            if (record < recordArray.length - 1) {
+                record++;
+                var canvasPic = new Image();
+                canvasPic.src = recordArray[record];
+                canvasPic.onload = function () { contextReal.drawImage(canvasPic, 0, 0); }
+                document.title = record + ":" + recordArray.length;
+            }
+        }
+
+        drawImage();
+
+
+        //testing
+
+        class Selection extends PaintFunction {
+            constructor(canvasReal, canvasDraft, contextReal, contextDraft) {
+                super();
+                this.canvasReal = canvasReal;
+                this.canvasDraft = canvasDraft;
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+                this.selectionBox = 0;
+                this.capSelection_canvas;
+                this.capSelection_ctx;
+                this.capSelection_img;
+                this.origX2;
+                this.origY2;
+                this.endX;
+                this.endY;
+                this.selectedImage = new Image();
+                this.firstMove = 0;
+            }
+
+            //When selectionBox = 0, dragging draw a dashed line box
+            //When selectionBox = 1, dragging inside the dashed line box move the selected image
+            //When selectionBox = 1, dragging outside the dashed line box will fix the selected image to its current position, and reset selectionBox to 0
+
+            onMouseDown(coord, event) {
+                console.log("elvis");
+
+                if (this.selectionBox == 0) {
+                    this.origX = coord[0];
+                    this.origY = coord[1];
+                } else if (
+                    (coord[0] <= this.endX) &&
+                    (coord[0] >= this.origX) &&
+                    (coord[1] <= this.endY) &&
+                    (coord[1] >= this.origY)
+                ) {
+                    if (this.firstMove == 0) {
+                        this.contextReal.clearRect(this.origX, this.origY, this.endX - this.origX, this.endY - this.origY);
+                        // this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+
+                        this.firstMove = 1;
+                    }
+
+                    this.origX2 = coord[0];
+                    this.origY2 = coord[1];
+                } else {
+                    this.selectionBox = 0;
+                    this.drawCapture(this.contextReal, this.origX, this.origY)
+                    contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                    this.origX = coord[0];
+                    this.origY = coord[1];
+                }
+            }
+            onDragging(coord, event) {
+                if (this.selectionBox == 0) {
+                    this.drawSelectionBox(this.origX, this.origY, coord[0], coord[1]);
+                } else if (this.selectionBox == 1) {
+                    contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                    this.drawSelectionBox(
+                        this.origX + coord[0] - this.origX2,
+                        this.origY + coord[1] - this.origY2,
+                        this.endX + coord[0] - this.origX2,
+                        this.endY + coord[1] - this.origY2
+                    );
+                    this.drawCapture(
+                        this.contextDraft,
+                        this.origX + coord[0] - this.origX2,
+                        this.origY + coord[1] - this.origY2
+                    )
+                }
+            }
+
+            onMouseMove(coord) {
+                if (
+                    (this.selectionBox == 1) &&
+                    (coord[0] <= this.endX) &&
+                    (coord[0] >= this.origX) &&
+                    (coord[1] <= this.endY) &&
+                    (coord[1] >= this.origY)) {
+                    $('#canvas-draft').css('cursor', 'all-scroll');
+                    $('body').css('cursor', 'all-scroll');
+                } else {
+                    $('#canvas-draft').css('cursor', 'default');
+                    $('body').css('cursor', 'default');
+                }
+            }
+
+            onMouseUp(coord) {
+                if (this.selectionBox == 0) {
+                    coord = this.adjustxy(coord[0], coord[1]);
+                    this.drawSelectionBox(this.origX, this.origY, coord[0], coord[1]);
+                    this.captureSelection(coord[0], coord[1]);
+                    this.selectionBox = 1;
+                    this.endX = coord[0];
+                    this.endY = coord[1];
+                } else if (this.selectionBox == 1) {
+                    contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                    this.drawSelectionBox(
+                        this.origX + coord[0] - this.origX2,
+                        this.origY + coord[1] - this.origY2,
+                        this.endX + coord[0] - this.origX2,
+                        this.endY + coord[1] - this.origY2
+                    );
+                    this.drawCapture(
+                        this.contextDraft,
+                        this.origX + coord[0] - this.origX2,
+                        this.origY + coord[1] - this.origY2
+                    )
+                    this.origX = this.origX + coord[0] - this.origX2;
+                    this.origY = this.origY + coord[1] - this.origY2;
+                    this.endX = this.endX + coord[0] - this.origX2;
+                    this.endY = this.endY + coord[1] - this.origY2;
+                } else {
+                    this.selectionBox = 0;
+                }
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+
+            drawSelectionBox(x1, y1, x2, y2) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.drawLine(x1, y1, x2, y1);
+                this.drawLine(x1, y1, x1, y2);
+                this.drawLine(x2, y1, x2, y2);
+                this.drawLine(x1, y2, x2, y2);
+            }
+
+            drawLine(x1, y1, x2, y2) {
+                this.contextDraft.strokeStyle = "#888";
+                this.contextDraft.lineJoin = "round";
+                this.contextDraft.lineWidth = 2;
+                this.contextDraft.beginPath();
+                this.contextDraft.setLineDash([5, 15]);
+                this.contextDraft.moveTo(x1, y1);
+                this.contextDraft.lineTo(x2, y2);
+                this.contextDraft.closePath();
+                this.contextDraft.stroke();
+                this.contextDraft.setLineDash([]);
+            }
+
+            captureSelection(x, y) {
+                this.capSelection_canvas = document.createElement('canvas');
+                this.capSelection_canvas.style.display = 'none';
+                document.body.appendChild(this.capSelection_canvas);
+                this.capSelection_canvas.width = x - this.origX;
+                this.capSelection_canvas.height = y - this.origY;
+
+                this.capSelection_ctx = this.capSelection_canvas.getContext('2d');
+                this.capSelection_ctx.drawImage(
+                    this.canvasReal,
+                    this.origX,//Start Clipping
+                    this.origY,//Start Clipping
+                    x - this.origX,//Clipping Width
+                    y - this.origY,//Clipping Height
+                    0,//Place X
+                    0,//Place Y
+                    this.capSelection_canvas.width,//Place Width
+                    this.capSelection_canvas.height//Place Height
+                );
+
+                this.selectedImage.src = this.capSelection_canvas.toDataURL();
+                this.firstMove = 0;
+            }
+
+            drawCapture(ctx, x, y) {
+                ctx.drawImage(this.selectedImage, x, y);
+            }
+
+            adjustxy(x, y) {
+                let medX, medY;
+                if (x < this.origX) {
+                    medX = x;
+                    x = this.origX
+                    this.origX = medX;
+                };
+                if (y < this.origY) {
+                    medY = y;
+                    y = this.origY
+                    this.origY = medY;
+                };
+                return [x, y];
+            }
+        }
+
+        function copy() {
+            currentFunction = new Selection(canvasReal, canvasDraft, contextReal, contextDraft);
+        }
+
+    </script>
+
+</body>
+
+</html>

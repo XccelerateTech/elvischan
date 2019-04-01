@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css"> -->
+    <!-- <script src="main.js"></script> -->
+</head>
+
+<body>
+    <script type='text/javascript' src="https://code.jquery.com/jquery-3.2.1.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    <canvas id="canvas-real" class="canvas" width='1280px' height='720px' style=" border:1px black dotted; position:absolute; top:0px; bottom:0px; left:0px; right:0px; z-index: -1;
+ "></canvas>
+    <button type="button" onclick="cUndo()">undo</button>
+    <button type="button" onclick="cRedo()">undo</button>
+    <button type="button" onclick="rect()">rect</button>
+    <button type="button" onclick="line()">line</button>
+    <button type="button" onclick="draw()">draw</button>
+    <button type="button" onclick="copy()">copy</button>
+    <button type="button" onclick="paste()">paste</button>
+    <button type="button" onclick="fillingColor()">fillingColor</button>
+    <button type="button" onclick="checking()">checking</button>
+
+
+
+
+
+
+    <canvas id="canvas-draft" class="canvas" width='1280px' height='720px' style="    border:1px black dotted; position:absolute; top:0px; bottom:0px; left:0px; right:0px; z-index: -1;
+"></canvas>
+
+    <script type='text/javascript'>
+        let canvasReal = document.getElementById('canvas-real');
+        let contextReal = canvasReal.getContext('2d');
+        let canvasDraft = document.getElementById('canvas-draft');
+        let contextDraft = canvasDraft.getContext('2d');
+        let currentFunction;
+        let dragging = false;
+        // undo event
+        var recordArray = new Array();
+        var record = -1;
+        //copy and paste
+        var imgData;
+
+        $('#canvas-draft').mousedown(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseDown([mouseX, mouseY], e);
+            dragging = true;
+        });
+
+        $('#canvas-draft').mousemove(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            if (dragging) {
+                currentFunction.onDragging([mouseX, mouseY], e);
+            }
+            currentFunction.onMouseMove([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseup(function (e) {
+            dragging = false;
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseUp([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseleave(function (e) {
+            dragging = false;
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseLeave([mouseX, mouseY], e);
+        });
+
+        $('#canvas-draft').mouseenter(function (e) {
+            let mouseX = e.offsetX;
+            let mouseY = e.offsetY;
+            currentFunction.onMouseEnter([mouseX, mouseY], e);
+        });
+
+
+        class PaintFunction {
+            constructor() { }
+            onMouseDown() { }
+            onDragging() { }
+            onMouseMove() { }
+            onMouseUp() { }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+
+        class DrawingRectangle extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+            }
+            onDragging(coord, event) {
+                this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY)
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextReal.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY);
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+
+
+        }
+        function rect() {
+            currentFunction = new DrawingRectangle(contextReal, contextDraft);
+        }
+
+        class DrawingLine extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+                this.contextDraft.moveTo(this.origX, this.origY);
+
+            }
+            onDragging(coord, event) {
+                this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.beginPath();
+                this.contextDraft.moveTo(this.origX, this.origY);
+                this.contextDraft.lineTo(coord[0], coord[1]);
+                this.contextDraft.stroke();
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextReal.beginPath();
+                this.contextReal.moveTo(this.origX, this.origY);
+                this.contextReal.lineTo(coord[0], coord[1]);
+                this.contextReal.stroke();
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+        function line() {
+            currentFunction = new DrawingLine(contextReal, contextDraft)
+        }
+
+        class Drawing extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+            }
+
+            onMouseDown(coord, event) {
+                this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+                this.contextReal.moveTo(this.origX, this.origY);
+
+            }
+            onDragging(coord, event) {
+                // ctx.beginPath();
+                // ctx.strokeStyle = $('#selColor').val();
+                // ctx.lineWidth = $('#selWidth').val();
+                // ctx.lineJoin = "round";
+                // ctx.moveTo(lastX, lastY);
+                // ctx.lineTo(x, y);
+                // ctx.closePath();
+                // ctx.stroke();
+
+                // this.contextDraft.fillStyle = "#f44";
+                // this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                // this.contextDraft.beginPath();
+                // this.contextDraft.moveTo(this.origX, this.origY);
+                // this.contextDraft.lineTo(coord[0], coord[1]);
+                // this.contextDraft.stroke();
+                // this.contextReal.moveTo(coord[0], coord[1]);
+
+                this.contextReal.lineTo(coord[0], coord[1]);
+                // this.contextReal.moveTo(coord[0], coord[1]);
+                // this.contextDraft.closePath();
+                this.contextReal.stroke();
+            }
+
+            onMouseMove() { }
+            onMouseUp() {
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+        }
+        function draw() {
+            currentFunction = new Drawing(contextReal, contextDraft)
+        }
+
+        // undo event
+
+        function drawImage() {
+            var image = new Image();
+            image.src = 'myimg.jpg';
+            $(image).load(function () {
+                contextReal.drawImage(image, 0, 0, 1280, 720);
+                cPush();
+            });
+        }
+
+        function cPush() {
+            record++;
+            if (record < recordArray.length) { recordArray.length = record; }
+            recordArray.push(document.getElementById('canvas-real').toDataURL());
+            document.title = record + ":" + recordArray.length;
+        }
+        function cUndo() {
+            if (record > 0) {
+                record--;
+                var canvasPic = new Image();
+                canvasPic.src = recordArray[record];
+                //onload 事件会在页面或图像加载完成后立即发生。
+                canvasPic.onload = function () { contextReal.drawImage(canvasPic, 0, 0); }
+                document.title = record + ":" + recordArray.length;
+            }
+        }
+        function cRedo() {
+
+            if (record < recordArray.length - 1) {
+                record++;
+                var canvasPic = new Image();
+                canvasPic.src = recordArray[record];
+                canvasPic.onload = function () { contextReal.drawImage(canvasPic, 0, 0); }
+                document.title = record + ":" + recordArray.length;
+            }
+        }
+
+        drawImage();
+
+        class Copying extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+
+            }
+
+            // border(a,b,c,d){
+            //     this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+            //     this.contextDraft.beginPath();
+            //     this.contextDraft.moveTo(a, b);
+            //     this.contextDraft.lineTo(c, d);
+            //     this.contextDraft.stroke();
+            // }
+
+            onMouseDown(coord, event) {
+                // this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+            }
+            onDragging(coord, event) {
+                // this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                // this.contextDraft.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY)
+                this.border(this.origX, this.origY, coord[0], coord[1]);
+                console.log("first cood:" + this.origX + this.origY + coord[0] + coord[1]);
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord, event) {
+                console.log("second cood:" + this.origX + this.origY + coord[0] + coord[1]);
+                imgData = this.contextReal.getImageData(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY);
+                this.contextReal.putImageData(imgData, 0, 0);
+                // this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                // this.contextReal.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY);
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+
+            border(a, b, c, d) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.beginPath();
+                this.contextDraft.moveTo(a, b);
+                this.contextDraft.lineTo(c, b);
+                // this.contextDraft.stroke();
+                // this.contextDraft.beginPath();
+                this.contextDraft.moveTo(a, b);
+                this.contextDraft.lineTo(a, d);
+                // this.contextDraft.stroke();
+                // this.contextDraft.beginPath();
+                this.contextDraft.moveTo(c, b);
+                this.contextDraft.lineTo(c, d);
+                // this.contextDraft.stroke();
+                // this.contextDraft.beginPath();
+                this.contextDraft.moveTo(a, d);
+                this.contextDraft.lineTo(c, d);
+                this.contextDraft.stroke();
+            }
+
+
+        }
+        function copy() {
+            currentFunction = new Copying(contextReal, contextDraft);
+        }
+
+        class Pasting extends PaintFunction {
+            constructor(contextReal, contextDraft) {
+                super();
+                this.contextReal = contextReal;
+                this.contextDraft = contextDraft;
+
+            }
+
+            // border(a,b,c,d){
+            //     this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+            //     this.contextDraft.beginPath();
+            //     this.contextDraft.moveTo(a, b);
+            //     this.contextDraft.lineTo(c, d);
+            //     this.contextDraft.stroke();
+            // }
+
+            onMouseDown(coord, event) {
+                // this.contextReal.fillStyle = "#f44";
+                this.origX = coord[0];
+                this.origY = coord[1];
+                this.contextDraft.putImageData(imgData, coord[0], coord[1]);
+
+            }
+            onDragging(coord, event) {
+                // this.contextDraft.fillStyle = "#f44";
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                // // this.contextDraft.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY)
+                // this.border(this.origX, this.origY, coord[0], coord[1]);
+                // console.log("first cood:" + this.origX + this.origY +coord[0] +coord[1]);
+                this.contextDraft.putImageData(imgData, coord[0], coord[1]);
+
+            }
+
+            onMouseMove() { }
+            onMouseUp(coord, event) {
+                // console.log("second cood:" + this.origX + this.origY +coord[0] +coord[1]);
+                // var imgData = this.contextReal.getImageData(this.origX, this.origY, coord[0] - this.origX, coord[1]-this.origY);
+                // this.contextReal.putImageData(imgData, 0, 0);
+                // this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                // this.contextReal.fillRect(this.origX, this.origY, coord[0] - this.origX, coord[1] - this.origY);
+                this.contextReal.putImageData(imgData, coord[0], coord[1]);
+
+                cPush();
+            }
+            onMouseLeave() { }
+            onMouseEnter() { }
+
+            border(a, b, c, d) {
+                this.contextDraft.clearRect(0, 0, canvasDraft.width, canvasDraft.height);
+                this.contextDraft.beginPath();
+                this.contextDraft.moveTo(a, b);
+                this.contextDraft.lineTo(c, b);
+                // this.contextDraft.stroke();
+                // this.contextDraft.beginPath();
+                this.contextDraft.moveTo(a, b);
+                this.contextDraft.lineTo(a, d);
+                // this.contextDraft.stroke();
+                // this.contextDraft.beginPath();
+                this.contextDraft.moveTo(c, b);
+                this.contextDraft.lineTo(c, d);
+                // this.contextDraft.stroke();
+                // this.contextDraft.beginPath();
+                this.contextDraft.moveTo(a, d);
+                this.contextDraft.lineTo(c, d);
+                this.contextDraft.stroke();
+            }
+
+
+        }
+        function paste() {
+            currentFunction = new Pasting(contextReal, contextDraft);
+        }
+
+        //fill color
+        // class filling extends PaintFunction {
+        //     constructor(contextReal, contextDraft) {
+        //         super();
+        //         this.contextReal = contextReal;
+        //         this.contextDraft = contextDraft;
+
+        //     }
+
+
+        //     onMouseDown(coord, event) {
+        //         // this.contextReal.fillStyle = "#f44";
+
+
+        //         var pixelStack = [[coord[0], coord[1]]];
+
+        //         while (pixelStack.length) {
+        //             var newPos, x, y, pixelPos, reachLeft, reachRight;
+        //             var canvasWidth = 500;
+        //             var drawingBoundTop = 0;
+        //             var colorLayer=[];
+        //             var canvasHeight = 500;
+        //             var colorLayer = contextReal.getImageData(0,0,canvasWidth,canvasHeight);
+        //             var startR = colorLayer.data[(coord[1]*canvasWidth + coord[0]) * 4];
+        //             var startG = colorLayer.data[(coord[1]*canvasWidth + coord[0]) * 4 + 1];
+        //             var startB = colorLayer.data[(coord[1]*canvasWidth + coord[0]) * 4 + 2];
+
+        //             newPos = pixelStack.pop();
+        //             x = newPos[0];
+        //             y = newPos[1];
+
+        //             pixelPos = (y * canvasWidth + x) * 4;
+        //             while (y-- >= drawingBoundTop && matchStartColor(pixelPos)) {
+        //                 pixelPos -= canvasWidth * 4;
+        //             }
+        //             pixelPos += canvasWidth * 4;
+        //             ++y;
+        //             reachLeft = false;
+        //             reachRight = false;
+        //             while (y++ < canvasHeight - 1 && matchStartColor(pixelPos)) {
+        //                 colorPixel(pixelPos);
+
+        //                 if (x > 0) {
+        //                     if (matchStartColor(pixelPos - 4)) {
+        //                         if (!reachLeft) {
+        //                             pixelStack.push([x - 1, y]);
+        //                             reachLeft = true;
+        //                         }
+        //                     }
+        //                     else if (reachLeft) {
+        //                         reachLeft = false;
+        //                     }
+        //                 }
+
+        //                 if (x < canvasWidth - 1) {
+        //                     if (matchStartColor(pixelPos + 4)) {
+        //                         if (!reachRight) {
+        //                             pixelStack.push([x + 1, y]);
+        //                             reachRight = true;
+        //                         }
+        //                     }
+        //                     else if (reachRight) {
+        //                         reachRight = false;
+        //                     }
+        //                 }
+
+        //                 pixelPos += canvasWidth * 4;
+        //             }
+        //         }
+        //         context.putImageData(colorLayer, 0, 0);
+
+        //         function matchStartColor(pixelPos) {
+        //             var r = colorLayer.data[pixelPos];
+        //             var g = colorLayer.data[pixelPos + 1];
+        //             var b = colorLayer.data[pixelPos + 2];
+
+        //             return (r == startR && g == startG && b == startB);
+        //         }
+
+        //         function colorPixel(pixelPos) {
+        //             colorLayer.data[pixelPos] = 255;
+        //             colorLayer.data[pixelPos + 1] = 0;
+        //             colorLayer.data[pixelPos + 2] = 255;
+        //             colorLayer.data[pixelPos + 3] = 255;
+        //         }
+
+
+
+
+        //     }
+        //     onDragging() {
+
+
+        //     }
+
+        //     onMouseMove() { }
+        //     onMouseUp() {
+        //     }
+        //     onMouseLeave() { }
+        //     onMouseEnter() { }
+
+        //     fillcolor(a,b) {
+        //         var pixelStack = [[a, b]];
+
+        //         while (pixelStack.length) {
+        //             var newPos, x, y, pixelPos, reachLeft, reachRight;
+        //             newPos = pixelStack.pop();
+        //             x = newPos[0];
+        //             y = newPos[1];
+
+        //             pixelPos = (y * canvasWidth + x) * 4;
+        //             while (y-- >= drawingBoundTop && matchStartColor(pixelPos)) {
+        //                 pixelPos -= canvasWidth * 4;
+        //             }
+        //             pixelPos += canvasWidth * 4;
+        //             ++y;
+        //             reachLeft = false;
+        //             reachRight = false;
+        //             while (y++ < canvasHeight - 1 && matchStartColor(pixelPos)) {
+        //                 colorPixel(pixelPos);
+
+        //                 if (x > 0) {
+        //                     if (matchStartColor(pixelPos - 4)) {
+        //                         if (!reachLeft) {
+        //                             pixelStack.push([x - 1, y]);
+        //                             reachLeft = true;
+        //                         }
+        //                     }
+        //                     else if (reachLeft) {
+        //                         reachLeft = false;
+        //                     }
+        //                 }
+
+        //                 if (x < canvasWidth - 1) {
+        //                     if (matchStartColor(pixelPos + 4)) {
+        //                         if (!reachRight) {
+        //                             pixelStack.push([x + 1, y]);
+        //                             reachRight = true;
+        //                         }
+        //                     }
+        //                     else if (reachRight) {
+        //                         reachRight = false;
+        //                     }
+        //                 }
+
+        //                 pixelPos += canvasWidth * 4;
+        //             }
+        //         }
+        //         contextReal.putImageData(colorLayer, 0, 0);
+
+        //         function matchStartColor(pixelPos) {
+        //             var r = colorLayer.data[pixelPos];
+        //             var g = colorLayer.data[pixelPos + 1];
+        //             var b = colorLayer.data[pixelPos + 2];
+
+        //             return (r == startR && g == startG && b == startB);
+        //         }
+
+        //         function colorPixel(pixelPos) {
+        //             colorLayer.data[pixelPos] = 255;
+        //             colorLayer.data[pixelPos + 1] = 0;
+        //             colorLayer.data[pixelPos + 2] = 255;
+        //             colorLayer.data[pixelPos + 3] = 255;
+        //         }
+
+
+        //     }
+        // }
+        // function checking(){
+        //     var a = contextReal.getImageData(0, 0, 500, 500);
+        //     console.log(a.data);
+        // }
+
+        // class PaintBucket extends PaintFunction {
+        //     constructor(contextReal) {
+        //         super();
+        //         this.context = contextReal;
+        //         this.pixelStack = [];
+        //         this.imgData;
+        //         this.curColor = {};
+        //         this.startPOS;
+        //         this.startR;
+        //         this.startG;
+        //         this.startG;
+        //     }
+
+        //     onMouseDown(coord) {
+        //         // this.HEXtoRGB()
+        //         //get start image data(array of pixel)
+        //         this.imgData = this.context.getImageData(0, 0, 500, 500)
+        //         // console.log("elvisssss: " + this.imgData.data);
+        //         //set start pixel location
+        //         this.startPOS = (coord[1] * 500 + coord[0]) * 4;
+        //         //set start rgb color
+        //         this.startR = this.imgData.data[this.startPOS];
+        //         this.startG = this.imgData.data[this.startPOS + 1];
+        //         this.startB = this.imgData.data[this.startPOS + 2];
+        //         //flood fill
+        //         this.floodFill(coord)
+        //         //update image
+        //         this.context.putImageData(this.imgData, 0, 0);
+        //     }
+        //     onDragging(coord) { }
+
+        //     onMouseMove() { }
+        //     onMouseUp() { }
+        //     onMouseLeave() { }
+        //     onMouseEnter() { }
+        //     floodFill(coord) {
+        //         var newPos,
+        //             x,
+        //             y,
+        //             pixelPos,
+        //             reachLeft,
+        //             reachRight
+        //         //add task to pixel stack
+        //         this.pixelStack.push(coord)
+
+        //         while (this.pixelStack.length) {
+        //             //set new locaiton from pixel stack
+        //             newPos = this.pixelStack.pop();
+        //             x = newPos[0];
+        //             y = newPos[1];
+
+        //             //set new pixel location
+        //             pixelPos = (y * 500 + x) * 4;
+
+        //             //go up as long as the color matches and are inside the canvas (return true)
+        //             while (y >= 0 && this.matchStartColor(pixelPos)) {
+        //                 y -= 1;
+        //                 pixelPos -= 500 * 4;
+        //             }
+        //             //update
+        //             pixelPos += 500 * 4;
+        //             y += 1;
+
+        //             //initialize for addtion of pixel stack
+        //             reachLeft = false;
+        //             reachRight = false;
+
+        //             //go down as long as the color matches in inside the canvas
+        //             while (y <= 500 - 1 && this.matchStartColor(pixelPos)) {
+        //                 //fill current pixel location
+        //                 this.colorPixel(pixelPos);
+        //                 //downward
+        //                 y += 1;
+
+        //                 //check left pixel
+        //                 if (x > 0) {
+        //                     //match start color return true
+        //                     if (this.matchStartColor(pixelPos - 4)) {
+        //                         //if not yet reach left edge 
+        //                         if (!reachLeft) {
+        //                             //add pixel to stack to handle it later
+        //                             this.pixelStack.push([x - 1, y])
+        //                             //prevent adding pixel that will eventually handled by the downward march of the pixel we just add
+        //                             reachLeft = true;
+        //                         }
+
+        //                     } else if (reachLeft) {
+        //                         //color not match then change reach Left to false, for adding next pixel stack
+        //                         reachLeft = false;
+        //                     }
+        //                 }
+
+        //                 // check right pixel
+        //                 if (x < 500 - 1) {
+        //                     if (this.matchStartColor(pixelPos + 4)) {
+        //                         if (!reachRight) {
+        //                             this.pixelStack.push([x + 1, y]);
+        //                             reachRight = true;
+        //                         }
+        //                     } else if (reachRight) {
+        //                         reachRight = false;
+        //                     }
+
+        //                 }
+        //                 //should be last valid pixel location
+        //                 pixelPos += 500 * 4;
+        //             }
+
+        //         }
+
+        //     }
+        //     //check new color equal to start color
+        //     matchStartColor(pixelPos) {
+        //         var r = this.imgData.data[pixelPos];
+        //         var g = this.imgData.data[pixelPos + 1];
+        //         var b = this.imgData.data[pixelPos + 2];
+        //         return (r === this.startR && g === this.startG && b === this.startB);
+        //     }
+        //     //fill color
+        //     colorPixel(pixelPos) {
+        //         this.imgData.data[pixelPos] = 255;
+        //         this.imgData.data[pixelPos + 1] = 0;
+        //         this.imgData.data[pixelPos + 2] = 0;
+        //         this.imgData.data[pixelPos + 3] = 255;
+        //     }
+        //     //convert hex to rgb color
+        //     // HEXtoRGB() {
+        //     //     var hex = "#004080";
+        //     //     if (hex.charAt(0) === '#') {
+        //     //         //remove #
+        //     //         hex = hex.substr(1);
+        //     //     }
+        //     //     //valid hex color
+        //     //     if (hex.length > 6) {
+        //     //         return false;
+        //     //     }
+        //     //     //split to array of 6
+        //     //     var values = hex.split(''),
+        //     //         r,
+        //     //         g,
+        //     //         b;
+        //     //     if (hex.length === 6) {
+        //     //         //parse to rgb color (16 = hexadecimel)
+        //     //         //each rgb occupy 2 hex number
+        //     //         r = parseInt(values[0].toString() + values[1].toString(), 16);
+        //     //         g = parseInt(values[2].toString() + values[3].toString(), 16);
+        //     //         b = parseInt(values[4].toString() + values[5].toString(), 16);
+        //     //     } else {
+        //     //         return false;
+        //     //     }
+        //     //     //set current rgb color
+        //     //     return this.curColor = {
+        //     //         r,
+        //     //         g,
+        //     //         b
+        //     //     }
+        //     // }
+        // }
+
+
+
+        // function fillingColor() {
+        //     currentFunction = new PaintBucket(contextReal, contextDraft);
+        // }
+
+    </script>
+
+</body>
+
+</html>

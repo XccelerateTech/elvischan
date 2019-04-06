@@ -1,0 +1,73 @@
+05/03
+Client / server side
+Search online useful MDN
+cd/ mkdir/ touch
+
+
+06/03
+<body>
+<header>
+<section>
+<footer>
+<script>
+
+background no-repeat 
+
+Bootstrap CDN
+
+07/03
+Vs studio Live server
+
+Animate.css
+Font awesome icon 
+Smooth sroll
+Navbar fix top
+Span
+
+11/03
+Objects reducer MDN
+
+12/03
+Bootstrap page
+Wow animate,
+Navbar 
+
+13/03
+Asychronous javascript and XML
+.code (shell vs code)
+Regular expression
+
+14/03
+Query keydown, keypress, keyup
+
+15/03
+BGM
+Question list game
+
+18/03
+GitHub pages
+
+19/03
+20/03
+Better try navbar without bootstrap
+
+21/03
+Canvas
+Threes.org (great 3D canvas site)
+
+Hacker session
+OSI layer
+Norse
+DOS attack
+
+01/04
+npm —save-dev
+npm init
+.gitignore
+requireDir
+Static coding ?
+asychrono coding ?
+
+02/04
+Blocking action vs non-blocking action ?
+Encoding utf8

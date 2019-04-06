@@ -9,15 +9,16 @@ class Player extends EventEmitter {
 
 
     start(){
-        this.emit('tick',this.status);
+        this.emit('player',this.status);
     }
 
 }
 
 const player = new Player("rock");
 
-player.on('tick', function (data) {
+player.on('player', function (data) {
         console.log("player : " + data);
-});
+        return(data);
+    });
 
 module.exports = player;

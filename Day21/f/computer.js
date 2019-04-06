@@ -2,22 +2,26 @@ const EventEmitter = require('events');
 
 
 class Computer extends EventEmitter {
-    constructor(a) {
+    constructor() {
         super();
-        this.status = a;
+        this.status;
     }
 
 
     start(){
-        this.emit('tick',this.status);
+        const choices = ['rock', 'paper', 'scissors']
+        const num = Math.floor(Math.random() * 3);
+        this.status = choices[num];
+        this.emit('computerPlay',this.status);
     }
     
 }
 
-const computer = new Computer("rock");
+const computer = new Computer();
 
-computer.on('tick', function (data) {
+computer.on('computerPlay', function (data) {
         console.log("computer : " + data);
+        return (data);
 });
 
 module.exports = computer;
